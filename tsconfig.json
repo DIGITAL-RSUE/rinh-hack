@@ -1,0 +1,32 @@
+{
+  "extends": "@quasar/app-vite/tsconfig-preset",
+  "allowJs": true,
+  "esModuleInterop": true,
+  "module": "esnext",
+  "moduleResolution": "node",
+  "noEmit": true,
+  "resolveJsonModule": true,
+  "forceConsistentCasingInFileNames": true,
+  "sourceMap": true,
+  "strict": true,
+  "target": "esnext",
+  "isolatedModules": true,
+  "useDefineForClassFields": true,
+  "jsx": "preserve",
+  "lib": ["esnext", "dom"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "src/*": ["frontend/src/*"],
+      "app/*": ["*"],
+      "frontend/*": ["frontend/*"],
+      "components/*": ["src/components/*"],
+      "layouts/*": ["src/layouts/*"],
+      "pages/*": ["src/pages/*"],
+      "assets/*": ["src/assets/*"],
+      "boot/*": ["src/boot/*"],
+      "stores/*": ["src/stores/*"]
+    }
+  },
+  "exclude": ["dist", ".quasar", "node_modules"]
+}

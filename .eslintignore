@@ -1,0 +1,9 @@
+/dist
+/frontend/src-capacitor
+/frontend/src-cordova
+/.quasar
+/node_modules
+.eslintrc.js
+/frontend/src-ssr
+/public/static
+/private/static
