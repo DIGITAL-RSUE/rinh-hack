@@ -3,10 +3,9 @@
 </template>
 
 <script setup lang="ts">
-import { useLogsStore } from 'stores/logs';
-import { watchEffect } from 'vue';
+import { useLogsStore } from 'stores/logs'
 
 const logsStore = useLogsStore();
 
-watchEffect(() => logsStore.fetch());
+logsStore.fetch()
 </script>

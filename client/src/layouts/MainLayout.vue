@@ -11,15 +11,15 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title> NGINX Logs analytics </q-toolbar-title>
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div>v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
       <q-list>
-        <q-item-label header> Essential Links </q-item-label>
+        <q-item-label header> Menu </q-item-label>
 
         <EssentialLink
           v-for="link in essentialLinks"
@@ -36,29 +36,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
 import EssentialLink, {
-  EssentialLinkProps,
-} from 'components/EssentialLink.vue';
+EssentialLinkProps
+} from 'components/EssentialLink.vue'
+import { ref } from 'vue'
 
 const essentialLinks: EssentialLinkProps[] = [
   {
     title: 'Table',
     caption: 'requests table',
-    icon: 'table',
+    icon: 'table_chart',
     link: '/',
   },
   {
     title: 'Maps',
     caption: 'requests location',
-    icon: 'marker',
+    icon: 'location_searching',
     link: '/map',
   },
   {
     title: 'Graphs',
     caption: 'requests charts',
-    icon: 'chart',
-    link: '/charts',
+    icon: 'analytics',
+    link: '/graphs',
   },
 ];
 

@@ -1,11 +1,14 @@
 <template>
   <q-page class="row items-center justify-evenly">
-    <q-select
+    <div class="row items-center">
+      <h4 class="q-mr-md">Фильтр по хосту</h4>
+      <q-select
       v-model="selectedHost"
       :options="hosts"
       :loading="!hosts"
-      label="Filter by host"
+      outlined
     />
+    </div>
     <div class="q-pa-md scroll-x">
       <q-table title="Nginx Logs" :rows="filteredLogs" :columns="columns" />
     </div>
@@ -13,9 +16,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { LogItem, Host } from 'src/models/index';
-import { useLogsStore } from 'stores/logs';
+import { Host, LogItem } from 'src/models/index'
+import { useLogsStore } from 'stores/logs'
+import { computed, ref } from 'vue'
 
 const logsStore = useLogsStore();
 
