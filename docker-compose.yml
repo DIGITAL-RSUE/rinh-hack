@@ -59,7 +59,7 @@ services:
       - 9600:9600
       - 5140:5140/tcp
       - 5140:5140/udp
-      - 8000:8000
+      - 3030:3030
     environment:
       LS_JAVA_OPTS: -Xms1024m -Xmx1024m
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
