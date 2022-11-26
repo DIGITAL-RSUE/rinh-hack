@@ -12,12 +12,12 @@ export const useLogsStore = defineStore('logs', {
   },
   actions: {
     async fetch(query = {
-      from: 5
+      from: 1,
+      size: 10
     } as Record<string,any>) {
       try {
         const { data } = await api.post<ElasticResponse>('api', JSON.stringify(query));
         this.elasticData = data;
-        console.log(data.hits.hits.length);
       } catch (e) {
         console.error(e);
       }

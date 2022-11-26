@@ -16,7 +16,7 @@
         :rows="logsStore.logList"
         :loading="loading"
         :columns="columns"
-        :pagination="pagination"
+        v-model:pagination="pagination"
         :rows-per-page-options="[10, 50, 100, 150]"
         @request="onRequest"
       />
@@ -56,7 +56,7 @@ const onRequest = async (props: {
   };
 }) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination;
-
+  console.log(page)
   loading.value = true;
 
   await logsStore.fetch({
