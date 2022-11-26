@@ -26,9 +26,9 @@
 </template>
 
 <script setup lang="ts">
-import { Host, LogItem } from 'src/models/index';
-import { useLogsStore } from 'stores/logs';
-import { computed, onMounted, ref, watch } from 'vue';
+import { Host, LogItem } from 'src/models/index'
+import { useLogsStore } from 'stores/logs'
+import { computed, onMounted, ref, watch } from 'vue'
 
 const logsStore = useLogsStore();
 const query = ref<Record<string, any>>({});
@@ -121,12 +121,6 @@ const columns = [
   },
   { name: 'httpversion', label: 'httpversion', field: 'httpversion' },
   { name: 'xforwardedfor', label: 'xforwardedfor', field: 'xforwardedfor' },
-  {
-    name: 'tags',
-    label: 'tags',
-    field: 'tags',
-    format: (val: string[]) => val.join(', '),
-  },
   {
     name: 'useragentDeivce',
     label: 'useragentDeivce',

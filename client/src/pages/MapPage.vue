@@ -23,7 +23,7 @@
           <ol-source-vector>
             <ol-feature v-for="(point, index) in points" :key="index">
               <ol-geom-point
-                :coordinates="[point.location.lat, point.location.lon]"
+                :coordinates="[ point.location.lon,point.location.lat,]"
               ></ol-geom-point>
               <ol-style>
                 <ol-style-circle :radius="10">
@@ -66,8 +66,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useLogsStore } from 'stores/logs';
+import { useLogsStore } from 'stores/logs'
+import { computed, ref } from 'vue'
 
 const logsStore = useLogsStore();
 
