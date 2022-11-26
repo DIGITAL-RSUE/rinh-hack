@@ -13,13 +13,12 @@
       <q-table
         ref="tableRef"
         title="Nginx Logs"
-        :rows="filteredLogs"
+        :rows="logsStore.logList"
         :loading="loading"
         :columns="columns"
-        :pagination="initialPagination"
+        :pagination="pagination"
         :rows-per-page-options="[10, 50, 100, 150]"
         @request="onRequest"
-        @update:pagination="initialPagination = $event"
       />
     </div>
   </q-page>
@@ -28,47 +27,26 @@
 <script setup lang="ts">
 import { Host, LogItem } from 'src/models/index'
 import { useLogsStore } from 'stores/logs'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 const logsStore = useLogsStore();
-const query = ref<Record<string, any>>({});
 
-let selectedHost = ref<Host['ip']>();
-
-const filteredLogs = computed(() =>
-  logsStore.logList.filter(
-    (l) =>
-      !selectedHost.value || (!!l.host?.ip && selectedHost.value == l.host.ip)
-  )
-);
-const hosts = computed(() =>
-  [...new Set(logsStore.logList.map((l) => l.host?.ip))].filter((h) => !!h)
-);
-let loading = ref(false);
 const tableRef = ref();
-const initialPagination = ref({
+
+const pagination = ref({
   sortBy: 'desc',
   descending: false,
   page: 1,
   rowsPerPage: 10,
   rowsNumber: logsStore.elasticData?.hits.total.value || 301,
 });
-const loadData = async (
-  page: number,
-  count: number,
-  sub: Record<string, any>
-) => {
-  loading.value = true;
-  let payload: Record<string, any> = {
-    from: page,
-    size: count,
-  };
-  if (!!sub && Object.values(sub).length > 0)
-    payload = { ...payload, query: sub };
-  await logsStore.fetch(payload);
+let selectedHost = ref<Host['ip']>();
+let loading = ref(false);
 
-  loading.value = false;
-};
+const hosts = computed(() =>
+  [...new Set(logsStore.logList.map((l) => l.host?.ip))].filter((h) => !!h)
+);
+
 const onRequest = async (props: {
   pagination: {
     page: number;
@@ -79,26 +57,28 @@ const onRequest = async (props: {
 }) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination;
 
-  await loadData(page, rowsPerPage, query.value);
-  initialPagination.value.page = page;
-  initialPagination.value.rowsPerPage = rowsPerPage;
-  initialPagination.value.sortBy = sortBy;
-  initialPagination.value.descending = descending;
-  initialPagination.value.rowsNumber =
-    logsStore.elasticData?.hits.total.value || 301;
+  loading.value = true;
+
+  await logsStore.fetch({
+    from: page,
+    size: rowsPerPage,
+  });
+
+  if (!!selectedHost.value)
+    logsStore.logList.filter(
+      (l) => !!l.host?.ip && selectedHost.value == l.host.ip
+    );
+
+  loading.value = false;
+  pagination.value.page = page;
+  pagination.value.rowsPerPage = rowsPerPage;
+  pagination.value.sortBy = sortBy;
+  pagination.value.descending = descending;
+  pagination.value.rowsNumber = logsStore.elasticData?.hits.total.value || 301;
 };
 
-watch(
-  query,
-  async () =>
-    await loadData(
-      initialPagination.value.page,
-      initialPagination.value.rowsPerPage,
-      query.value
-    )
-);
-
 onMounted(() => tableRef.value.requestServerInteraction());
+
 const columns = [
   {
     name: 'timestamp',
@@ -106,63 +86,34 @@ const columns = [
     field: '@timestamp',
     sortable: true,
   },
-  // {
-  //   name: 'message',
-  //   label: 'Сообщение',
-  //   field: 'message',
-  // },
   { name: 'response', label: 'Код ответа', field: 'response', sortable: true },
-  { name: 'auth', label: 'auth', field: 'auth' },
-  { name: '@version', label: '@version', field: '@version' },
-  {
-    name: 'service',
-    label: 'service',
-    field: (row: LogItem) => row.service?.type,
-  },
+  { name: '@version', label: 'Ver.', field: '@version' },
   { name: 'httpversion', label: 'httpversion', field: 'httpversion' },
-  { name: 'xforwardedfor', label: 'xforwardedfor', field: 'xforwardedfor' },
-  {
-    name: 'useragentDeivce',
-    label: 'useragentDeivce',
-    field: (row: LogItem) => row.useragent?.device,
-  },
   {
     name: 'useragentName',
     label: 'useragentName',
     field: (row: LogItem) => row.useragent?.name,
   },
   {
-    name: 'useragentOS',
-    label: 'useragentOS',
-    field: (row: LogItem) => row.useragent?.os,
-  },
-  {
     name: 'useragentVersion',
     label: 'useragentVersion',
     field: (row: LogItem) => row.useragent?.version,
   },
-  { name: 'log', label: 'log', field: (row: LogItem) => row.log?.syslog },
-  // {
-  //   name: 'event',
-  //   label: 'event',
-  //   field: (row: LogItem) => row.event.original,
-  // },
   {
-    name: 'hostHostname',
-    label: 'hostHostname',
-    field: (row: LogItem) => row.host?.hostname,
-  },
-  {
-    name: 'hostIP',
-    label: 'hostIP',
-    field: (row: LogItem) => row.host?.ip,
+    name: 'host',
+    label: 'host',
+    field: (row: LogItem) => row.host?.ip +' - ' + row.host?.hostname,
   },
   {
     name: 'client_ip',
-    label: 'client_ip',
+    label: 'client ip',
     field: (row: LogItem) => row.client_ip?.ip,
   },
-  { name: 'ident', label: 'ident', field: 'ident' },
+  {
+    name: 'client_city',
+    label: 'client city',
+    field: (row: LogItem) => row.client_ip?.geo.city_name,
+  },
   {
     name: 'process',
     label: 'process',
