@@ -9,6 +9,17 @@
         outlined
       />
     </div>
+    <div class="col-12">
+      <div class="row">
+        <div class="col-4">
+          Не достаточно информации
+          <q-checkbox
+            v-model="notEnoughInformation"
+            @click="tableRef.requestServerInteraction()"
+          />
+        </div>
+      </div>
+    </div>
     <div class="q-pa-md scroll-x">
       <q-table
         ref="tableRef"
@@ -19,15 +30,16 @@
         v-model:pagination="pagination"
         :rows-per-page-options="[10, 50, 100, 150]"
         @request="onRequest"
-      />
+      >
+      </q-table>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { Host, LogItem } from 'src/models/index'
-import { useLogsStore } from 'stores/logs'
-import { computed, onMounted, ref } from 'vue'
+import { Host, LogItem } from 'src/models/index';
+import { useLogsStore } from 'stores/logs';
+import { computed, onMounted, ref } from 'vue';
 
 const logsStore = useLogsStore();
 
@@ -42,6 +54,7 @@ const pagination = ref({
 });
 let selectedHost = ref<Host['ip']>();
 let loading = ref(false);
+let notEnoughInformation = ref(false);
 
 const hosts = computed(() =>
   [...new Set(logsStore.logList.map((l) => l.host?.ip))].filter((h) => !!h)
@@ -56,13 +69,17 @@ const onRequest = async (props: {
   };
 }) => {
   const { page, rowsPerPage, sortBy, descending } = props.pagination;
-  console.log(page)
   loading.value = true;
 
   await logsStore.fetch({
     from: page,
     size: rowsPerPage,
   });
+
+  if (notEnoughInformation.value)
+    logsStore.logList.filter((l) => {
+      !!l.client_ip.geo.city_name || !!l.referrer;
+    });
 
   if (!!selectedHost.value)
     logsStore.logList.filter(
@@ -102,7 +119,7 @@ const columns = [
   {
     name: 'host',
     label: 'host',
-    field: (row: LogItem) => row.host?.ip +' - ' + row.host?.hostname,
+    field: (row: LogItem) => row.host?.ip + ' - ' + row.host?.hostname,
   },
   {
     name: 'client_ip',
@@ -113,6 +130,7 @@ const columns = [
     name: 'client_city',
     label: 'client city',
     field: (row: LogItem) => row.client_ip?.geo.city_name,
+    sortable: true,
   },
   {
     name: 'process',
