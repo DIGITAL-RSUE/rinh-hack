@@ -3,26 +3,37 @@
     <div class="row items-center">
       <h4 class="q-mr-md">Фильтр по хосту</h4>
       <q-select
-      v-model="selectedHost"
-      :options="hosts"
-      :loading="!hosts"
-      outlined
-    />
+        v-model="selectedHost"
+        :options="hosts"
+        :loading="!hosts"
+        outlined
+      />
     </div>
     <div class="q-pa-md scroll-x">
-      <q-table title="Nginx Logs" :rows="filteredLogs" :columns="columns" />
+      <q-table
+        ref="tableRef"
+        title="Nginx Logs"
+        :rows="filteredLogs"
+        :loading="loading"
+        :columns="columns"
+        :pagination="initialPagination"
+        :rows-per-page-options="[10, 50, 100, 150]"
+        @request="onRequest"
+        @update:pagination="initialPagination = $event"
+      />
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { Host, LogItem } from 'src/models/index'
-import { useLogsStore } from 'stores/logs'
-import { computed, ref } from 'vue'
+import { Host, LogItem } from 'src/models/index';
+import { useLogsStore } from 'stores/logs';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const logsStore = useLogsStore();
+const query = ref<Record<string, any>>({});
 
-const selectedHost = ref<Host['ip']>();
+let selectedHost = ref<Host['ip']>();
 
 const filteredLogs = computed(() =>
   logsStore.logList.filter(
@@ -33,7 +44,61 @@ const filteredLogs = computed(() =>
 const hosts = computed(() =>
   [...new Set(logsStore.logList.map((l) => l.host?.ip))].filter((h) => !!h)
 );
+let loading = ref(false);
+const tableRef = ref();
+const initialPagination = ref({
+  sortBy: 'desc',
+  descending: false,
+  page: 1,
+  rowsPerPage: 10,
+  rowsNumber: logsStore.elasticData?.hits.total.value || 301,
+});
+const loadData = async (
+  page: number,
+  count: number,
+  sub: Record<string, any>
+) => {
+  loading.value = true;
+  let payload: Record<string, any> = {
+    from: page,
+    size: count,
+  };
+  if (!!sub && Object.values(sub).length > 0)
+    payload = { ...payload, query: sub };
+  await logsStore.fetch(payload);
 
+  loading.value = false;
+};
+const onRequest = async (props: {
+  pagination: {
+    page: number;
+    rowsPerPage: number;
+    sortBy: string;
+    descending: boolean;
+  };
+}) => {
+  const { page, rowsPerPage, sortBy, descending } = props.pagination;
+
+  await loadData(page, rowsPerPage, query.value);
+  initialPagination.value.page = page;
+  initialPagination.value.rowsPerPage = rowsPerPage;
+  initialPagination.value.sortBy = sortBy;
+  initialPagination.value.descending = descending;
+  initialPagination.value.rowsNumber =
+    logsStore.elasticData?.hits.total.value || 301;
+};
+
+watch(
+  query,
+  async () =>
+    await loadData(
+      initialPagination.value.page,
+      initialPagination.value.rowsPerPage,
+      query.value
+    )
+);
+
+onMounted(() => tableRef.value.requestServerInteraction());
 const columns = [
   {
     name: 'timestamp',

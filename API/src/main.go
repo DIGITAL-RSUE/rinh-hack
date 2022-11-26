@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/gin-contrib/cors"
@@ -28,9 +30,11 @@ func setupRouter() *gin.Engine {
 		query, err := ioutil.ReadAll(ctx.Request.Body)
 		query_string := string(query)
 
+		fmt.Println(query_string)
+
 		res, err := es.Search(
 			es.Search.WithIndex("logs"),
-			es.Search.WithQuery(query_string),
+			es.Search.WithBody(strings.NewReader(query_string)),
 		)
 
 		body, err := ioutil.ReadAll(res.Body)
