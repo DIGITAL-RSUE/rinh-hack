@@ -1,3 +1,7 @@
 NGUSERNAME [a-zA-Z\.\@\-\+_%]+
 NGUSER %{NGUSERNAME}
 NGINX_ACCESS %{IPORHOST:clientip} %{NGUSER:ident} %{NGUSER:auth} \[%{HTTPDATE:timestamp}\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} (?:%{NUMBER:bytes}|-) (?:"(?:%{URI:referrer}|-)"|%{QS:referrer}) %{QS:agent} %{QS:xforwardedfor}
+
+FULLOG (?:%{SYSLOGBASE} )?%{IPORHOST:clientip} (?<ident>[a-zA-Z\.\@\-\+_%]+) (?<auth>[a-zA-Z\.\@\-\+_%]+) \[%{HTTPDATE:timestamp}\] (?:\\)?"%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}(?:\\)?" %{NUMBER:response} (?:%{NUMBER:bytes}|-) (?:\\?"(?:%{URI:referrer}|-)\\?") (?:\\?"%{DATA:agent}\\?")
+ORIGIN (?:\\)?"%{DATA:origin}(?:\\)?"
+FULLSYSLOG (?:%{SYSLOGBASE} )?%{IPORHOST:clientip} (?<ident>[a-zA-Z\.\@\-\+_%]+) (?<auth>[a-zA-Z\.\@\-\+_%]+) \[%{HTTPDATE:timestamp}\](?: %{ORIGIN :origin})? (?:\\)?"%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}(?:\\)?" %{NUMBER:response} (?:%{NUMBER:bytes}|-) (?:\\?"(?:%{URI:referrer}|-)\\?") (?:\\?"%{DATA:agent}\\?")
